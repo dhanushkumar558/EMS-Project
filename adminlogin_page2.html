@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Administrator Login - Page 2</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .deleteButton {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .editMode input {
+            border: 1px solid #ddd;
+            padding: 5px;
+        }
+
+        #fetchButton {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <button id="fetchButton" onclick="toggleEmployeeTable()">Fetch Employee Table</button>
+
+    <!-- Display the same employee table as in the first page -->
+    <table id="employeeTable" style="display: none;">
+        <tr>
+            <th>Employee Name</th>
+            <th>User Name</th>
+            <th>Employee ID</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            <th>Action</th>
+        </tr>
+    </table>
+
+    <script>
+        // Load data from localStorage on page load
+        window.onload = function () {
+            loadDataFromStorage();
+        };
+
+        // Listen for postMessage events from other pages
+        window.addEventListener('message', function(event) {
+            if (event.data === 'employeeDataUpdated' || event.data === 'fetchEmployeeData') {
+                loadDataFromStorage();
+            }
+        });
+
+        function toggleEmployeeTable() {
+            var table = document.getElementById("employeeTable");
+
+            if (table.style.display === "none") {
+                // Fetch Employee Table
+                table.style.display = "table";
+                document.getElementById("fetchButton").innerHTML = "Close Employee Table";
+            } else {
+                // Close Employee Table
+                table.style.display = "none";
+                document.getElementById("fetchButton").innerHTML = "Fetch Employee Table";
+            }
+        }
+
+        function fetchData() {
+            // Request data update from the first page
+            window.opener.postMessage('fetchEmployeeData', '*');
+        }
+
+        function loadDataFromStorage() {
+            var storedData = localStorage.getItem('employeeData');
+
+            if (storedData) {
+                var data = JSON.parse(storedData);
+
+                // Clear existing rows
+                var table = document.getElementById("employeeTable");
+                while (table.rows.length > 1) {
+                    table.deleteRow(1);
+                }
+
+                for (var i = 0; i < data.length; i++) {
+                    var row = table.insertRow(1);
+
+                    for (var j = 0; j < data[i].length; j++) {
+                        var cell = row.insertCell(j);
+                        cell.innerHTML = '<div class="editMode"><input type="text" value="' + data[i][j] + '" disabled></div>';
+                    }
+
+                    var deleteButtonCell = row.insertCell(data[i].length);
+                    deleteButtonCell.innerHTML = '<button class="deleteButton" onclick="deleteRow(this.parentNode.parentNode)">Delete</button>' +
+                        '<button class="editButton" onclick="editRow(this.parentNode.parentNode)">Edit</button>' +
+                        '<button class="saveButton" onclick="saveEditedRow(this.parentNode.parentNode)" style="display:none">Save</button>';
+                }
+            }
+        }
+
+        // ... (remaining functions remain the same)
+    </script>
+
+</body>
+</html>
