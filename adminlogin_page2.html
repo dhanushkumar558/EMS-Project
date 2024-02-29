@@ -111,7 +111,63 @@
             }
         }
 
-        // ... (remaining functions remain the same)
+        function deleteRow(row) {
+            var table = document.getElementById("employeeTable");
+            table.deleteRow(row.rowIndex);
+            saveDataToStorage();
+        }
+
+        function editRow(row) {
+            if (!row.classList.contains('editMode')) {
+                row.classList.add('editMode');
+                var cells = row.cells;
+                for (var i = 0; i < cells.length - 1; i++) {
+                    var input = cells[i].querySelector('input');
+                    input.removeAttribute('disabled');
+                }
+
+                var editButton = row.querySelector('.editButton');
+                var saveButton = row.querySelector('.saveButton');
+                editButton.style.display = 'none';
+                saveButton.style.display = 'inline-block';
+            }
+        }
+
+        function saveEditedRow(row) {
+            var cells = row.cells;
+            for (var i = 0; i < cells.length - 1; i++) {
+                var input = cells[i].querySelector('input');
+                input.setAttribute('disabled', 'disabled');
+            }
+            row.classList.remove('editMode');
+
+            var editButton = row.querySelector('.editButton');
+            var saveButton = row.querySelector('.saveButton');
+            editButton.style.display = 'inline-block';
+            saveButton.style.display = 'none';
+
+            saveDataToStorage(); // Save data to localStorage after editing
+        }
+
+        // Save data to localStorage
+        function saveDataToStorage() {
+            var tableRows = document.getElementById("employeeTable").rows;
+            var data = [];
+
+            for (var i = 1; i < tableRows.length; i++) {
+                var cells = tableRows[i].cells;
+                var rowData = [];
+
+                for (var j = 0; j < cells.length - 1; j++) {
+                    var input = cells[j].querySelector('input');
+                    rowData.push(input.value);
+                }
+
+                data.push(rowData);
+            }
+
+            localStorage.setItem('employeeData', JSON.stringify(data));
+        }
     </script>
 
 </body>
