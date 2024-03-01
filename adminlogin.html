@@ -10,8 +10,6 @@
             display: none;
         }
 
-
-
         th, td {
             border: 1px solid #ddd;
             padding: 8px;
@@ -216,5 +214,187 @@
         }
     </script>
 
+    <!-- Second set of form and table -->
+    <br>
+
+    <input type="text" id="employeeName1" placeholder="Enter employee name">
+    <input type="text" id="userName1" placeholder="Enter user name">
+    <input type="text" id="employeeId1" placeholder="Enter employee id">
+    <input type="number" id="mobile1" placeholder="Mobile">
+    <input type="text" id="email1" placeholder="Email">
+    <button onclick="saveEmployee1()">Save</button>
+    <br>
+    <button id="fetchButton1" onclick="toggleEmployeeTable1()">Fetch Manager Table</button>
+
+    <table id="employeeTable1">
+        <tr>
+            <th>Employee Name</th>
+            <th>User Name</th>
+            <th>Employee ID</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            <th>Action</th>
+        </tr>
+    </table>
+
+    <script>
+        var fetchClicked1 = false;
+
+        // Load data from localStorage on page load
+        window.onload = function () {
+            loadDataFromStorage1();
+        };
+
+        // Listen for postMessage events from other pages
+        window.addEventListener('message', function(event) {
+            if (event.data === 'employeeDataUpdated1') {
+                loadDataFromStorage1();
+            } else if (event.data === 'fetchEmployeeData1') {
+                fetchData1();
+            }
+        });
+
+        function saveEmployee1() {
+            var employeeName1 = document.getElementById("employeeName1").value;
+            var userName1 = document.getElementById("userName1").value;
+            var employeeId1 = document.getElementById("employeeId1").value;
+            var mobile1 = document.getElementById("mobile1").value;
+            var email1 = document.getElementById("email1").value;
+
+            var table1 = document.getElementById("employeeTable1");
+            var row1 = table1.insertRow(1); // Insert at the second row (index 1)
+
+            var cell1 = row1.insertCell(0);
+            var cell2 = row1.insertCell(1);
+            var cell3 = row1.insertCell(2);
+            var cell4 = row1.insertCell(3);
+            var cell5 = row1.insertCell(4);
+            var cell6 = row1.insertCell(5);
+
+            cell1.innerHTML = '<div class="editMode1"><input type="text" value="' + employeeName1 + '" disabled></div>';
+            cell2.innerHTML = '<div class="editMode1"><input type="text" value="' + userName1 + '" disabled></div>';
+            cell3.innerHTML = '<div class="editMode1"><input type="text" value="' + employeeId1 + '" disabled></div>';
+            cell4.innerHTML = '<div class="editMode1"><input type="number" value="' + mobile1 + '" disabled></div>';
+            cell5.innerHTML = '<div class="editMode1"><input type="text" value="' + email1 + '" disabled></div>';
+            cell6.innerHTML = '<button class="deleteButton" onclick="deleteRow1(this.parentNode.parentNode)">Delete</button>' +
+                '<button class="editButton" onclick="editRow1(this.parentNode.parentNode)">Edit</button>' +
+                '<button class="saveButton" onclick="saveEditedRow1(this.parentNode.parentNode)" style="display:none">Save</button>';
+
+            // Save data to localStorage
+            saveDataToStorage1();
+        }
+
+        function toggleEmployeeTable1() {
+            var table1 = document.getElementById("employeeTable1");
+            var fetchButton1 = document.getElementById("fetchButton1");
+
+            if (!fetchClicked1) {
+                // Fetch Employee Table
+                table1.style.display = "table";
+                fetchButton1.innerHTML = "Close Manager Table";
+                fetchClicked1 = true;
+            } else {
+                // Close Employee Table
+                table1.style.display = "none";
+                fetchButton1.innerHTML = "Fetch Manager Table";
+                fetchClicked1 = false;
+            }
+        }
+
+        function deleteRow1(row1) {
+            var table1 = document.getElementById("employeeTable1");
+            table1.deleteRow(row1.rowIndex);
+
+            // Save data to localStorage after deletion
+            saveDataToStorage1();
+        }
+
+        function editRow1(row1) {
+            if (!row1.classList.contains('editMode1')) {
+                row1.classList.add('editMode1');
+                var cells1 = row1.cells;
+                for (var i = 0; i < cells1.length - 1; i++) {
+                    var input1 = cells1[i].querySelector('input');
+                    input1.removeAttribute('disabled');
+                }
+
+                var editButton1 = row1.querySelector('.editButton');
+                var saveButton1 = row1.querySelector('.saveButton');
+                editButton1.style.display = 'none';
+                saveButton1.style.display = 'inline-block';
+            }
+        }
+
+        function saveEditedRow1(row1) {
+            var cells1 = row1.cells;
+            for (var i = 0; i < cells1.length - 1; i++) {
+                var input1 = cells1[i].querySelector('input');
+                input1.setAttribute('disabled', 'disabled');
+            }
+            row1.classList.remove('editMode1');
+
+            var editButton1 = row1.querySelector('.editButton');
+            var saveButton1 = row1.querySelector('.saveButton');
+            editButton1.style.display = 'inline-block';
+            saveButton1.style.display = 'none';
+
+            saveDataToStorage1(); // Save data to localStorage after editing
+        }
+
+        function saveDataToStorage1() {
+            var tableRows1 = document.getElementById("employeeTable1").rows;
+            var data1 = [];
+
+            for (var i = 1; i < tableRows1.length; i++) {
+                var cells1 = tableRows1[i].cells;
+                var rowData1 = [];
+
+                for (var j = 0; j < cells1.length - 1; j++) {
+                    var input1 = cells1[j].querySelector('input');
+                    rowData1.push(input1.value);
+                }
+
+                data1.push(rowData1);
+            }
+
+            localStorage.setItem('employeeData1', JSON.stringify(data1));
+
+            // Notify other pages that data has been updated
+            window.postMessage('employeeDataUpdated1', '*');
+        }
+
+        function fetchData1() {
+            // Request data update from the first page
+            window.postMessage('fetchEmployeeData1', '*');
+        }
+
+        function loadDataFromStorage1() {
+            var storedData1 = localStorage.getItem('employeeData1');
+
+            if (storedData1) {
+                var data1 = JSON.parse(storedData1);
+
+                // Clear existing rows
+                var table1 = document.getElementById("employeeTable1");
+                while (table1.rows.length > 1) {
+                    table1.deleteRow(1);
+                }
+
+                for (var i = 0; i < data1.length; i++) {
+                    var row1 = table1.insertRow(1);
+
+                    for (var j = 0; j < data1[i].length; j++) {
+                        var cell1 = row1.insertCell(j);
+                        cell1.innerHTML = '<div class="editMode1"><input type="text" value="' + data1[i][j] + '" disabled></div>';
+                    }
+
+                    var deleteButtonCell1 = row1.insertCell(data1[i].length);
+                    deleteButtonCell1.innerHTML = '<button class="deleteButton" onclick="deleteRow1(this.parentNode.parentNode)">Delete</button>' +
+                        '<button class="editButton" onclick="editRow1(this.parentNode.parentNode)">Edit</button>' +
+                        '<button class="saveButton" onclick="saveEditedRow1(this.parentNode.parentNode)" style="display:none">Save</button>';
+                }
+            }
+        }
+    </script>
 </body>
 </html>

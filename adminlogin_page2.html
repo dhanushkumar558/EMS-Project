@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Administrator Login - Page 2</title>
     <style>
@@ -9,13 +10,15 @@
             margin-top: 20px;
         }
 
-        th, td {
+        th,
+        td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: left;
         }
 
-        .deleteButton {
+        .deleteButton,
+        .deleteButton1 {
             background-color: #4CAF50;
             color: white;
             border: none;
@@ -25,16 +28,19 @@
             margin-right: 5px;
         }
 
-        .editMode input {
+        .editMode input,
+        .editMode1 input {
             border: 1px solid #ddd;
             padding: 5px;
         }
 
-        #fetchButton {
+        #fetchButton,
+        #fetchButton1 {
             margin-bottom: 10px;
         }
     </style>
 </head>
+
 <body>
 
     <button id="fetchButton" onclick="toggleEmployeeTable()">Fetch Employee Table</button>
@@ -58,7 +64,7 @@
         };
 
         // Listen for postMessage events from other pages
-        window.addEventListener('message', function(event) {
+        window.addEventListener('message', function (event) {
             if (event.data === 'employeeDataUpdated' || event.data === 'fetchEmployeeData') {
                 loadDataFromStorage();
             }
@@ -170,5 +176,141 @@
         }
     </script>
 
+    <!-- New Section -->
+
+    <button id="fetchButton1" onclick="toggleEmployeeTable1()">Fetch Manager Table</button>
+
+    <!-- Display the same employee table as in the first page -->
+    <table id="employeeTable1" style="display: none;">
+        <tr>
+            <th>Employee Name</th>
+            <th>User Name</th>
+            <th>Employee ID</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            <th>Action</th>
+        </tr>
+    </table>
+
+    <script>
+        // Load data from localStorage on page load
+        window.onload = function () {
+            loadDataFromStorage1();
+        };
+
+        // Listen for postMessage events from other pages
+        window.addEventListener('message', function (event) {
+            if (event.data === 'employeeDataUpdated1' || event.data === 'fetchEmployeeData1') {
+                loadDataFromStorage1();
+            }
+        });
+
+        function toggleEmployeeTable1() {
+            var table = document.getElementById("employeeTable1");
+
+            if (table.style.display === "none") {
+                // Fetch Employee Table
+                table.style.display = "table";
+                document.getElementById("fetchButton1").innerHTML = "Close Manager Table";
+            } else {
+                // Close Employee Table
+                table.style.display = "none";
+                document.getElementById("fetchButton1").innerHTML = "Fetch Manager Table";
+            }
+        }
+
+        function fetchData1() {
+            // Request data update from the first page
+            window.opener.postMessage('fetchEmployeeData1', '*');
+        }
+
+        function loadDataFromStorage1() {
+            var storedData1 = localStorage.getItem('employeeData1');
+
+            if (storedData1) {
+                var data = JSON.parse(storedData1);
+
+                // Clear existing rows
+                var table = document.getElementById("employeeTable1");
+                while (table.rows.length > 1) {
+                    table.deleteRow(1);
+                }
+
+                for (var i = 0; i < data.length; i++) {
+                    var row = table.insertRow(1);
+
+                    for (var j = 0; j < data[i].length; j++) {
+                        var cell = row.insertCell(j);
+                        cell.innerHTML = '<div class="editMode1"><input type="text" value="' + data[i][j] + '" disabled></div>';
+                    }
+
+                    var deleteButtonCell = row.insertCell(data[i].length);
+                    deleteButtonCell.innerHTML = '<button class="deleteButton1" onclick="deleteRow1(this.parentNode.parentNode)">Delete</button>' +
+                        '<button class="editButton1" onclick="editRow1(this.parentNode.parentNode)">Edit</button>' +
+                        '<button class="saveButton1" onclick="saveEditedRow1(this.parentNode.parentNode)" style="display:none">Save</button>';
+                }
+            }
+        }
+
+        function deleteRow1(row) {
+            var table = document.getElementById("employeeTable1");
+            table.deleteRow(row.rowIndex);
+            saveDataToStorage1();
+        }
+
+        function editRow1(row) {
+            if (!row.classList.contains('editMode1')) {
+                row.classList.add('editMode1');
+                var cells = row.cells;
+                for (var i = 0; j < cells.length - 1; i++) {
+                    var input = cells[i].querySelector('input');
+                    input.removeAttribute('disabled');
+                }
+
+                var editButton = row.querySelector('.editButton1');
+                var saveButton = row.querySelector('.saveButton1');
+                editButton.style.display = 'none';
+                saveButton.style.display = 'inline-block';
+            }
+        }
+
+        function saveEditedRow1(row) {
+            var cells = row.cells;
+            for (var i = 0; i < cells.length - 1; i++) {
+                var input = cells[i].querySelector('input');
+                input.setAttribute('disabled', 'disabled');
+            }
+            row.classList.remove('editMode1');
+
+            var editButton = row.querySelector('.editButton1');
+            var saveButton = row.querySelector('.saveButton1');
+            editButton.style.display = 'inline-block';
+            saveButton.style.display = 'none';
+
+            saveDataToStorage1(); // Save data to localStorage after editing
+        }
+
+        // Save data to localStorage
+        function saveDataToStorage1() {
+            var tableRows = document.getElementById("employeeTable1").rows;
+            var data = [];
+
+            for (var i = 1; i < tableRows.length; i++) {
+                var cells = tableRows[i].cells;
+                var rowData = [];
+
+                for (var j = 0; j < cells.length - 1; j++) {
+                    var input = cells[j].querySelector('input');
+                    rowData.push(input.value);
+                }
+
+                data.push(rowData);
+            }
+
+            localStorage.setItem('employeeData1', JSON.stringify(data));
+        }
+    </script>
+
 </body>
+
 </html>
